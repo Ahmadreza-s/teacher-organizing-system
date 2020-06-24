@@ -1,26 +1,46 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import {Redirect, Route, Switch} from 'react-router-dom';
+import Login from './containers/Login/Login';
+import {useSelector} from 'react-redux';
+import axios from 'axios';
+import {BASE_URL} from './apis/constants';
+import Dashboard from './containers/Dashboard/Dashboard';
+
+axios.defaults.baseURL = BASE_URL;
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const user = useSelector(state => state.user.user);
+
+    axios.defaults.headers.common = {'Authorization': `Bearer ${user?.access}`};
+
+    React.useEffect(() => {
+        //todo: validate token
+    }, []);
+    return (
+        <Switch>
+            {
+                user &&
+                <Route path={'/dashboard'}>
+                    <Dashboard/>
+                </Route>
+            }
+            {
+                !user &&
+                <Route path='/login'>
+                    <Login/>
+                </Route>
+            }
+            {
+                !user &&
+                <Redirect to={'/login'}/>
+            }
+            {
+                user &&
+                <Redirect to={'/dashboard'}/>
+            }
+        </Switch>
+    );
 }
 
 export default App;
